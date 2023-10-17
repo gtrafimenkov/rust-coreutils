@@ -15,6 +15,7 @@
 
 use ggstd::crypto::md5;
 use ggstd::encoding::hex;
+use ggstd::hash::Hash;
 #[cfg(windows)]
 use memchr::memmem;
 use std::io::Write;
@@ -339,7 +340,7 @@ macro_rules! impl_digest_shake {
 }
 
 pub struct Md5 {
-    hash: Box<dyn ggstd::hash::Hash>,
+    hash: md5::Digest,
 }
 pub struct Sha1(sha1::Sha1);
 pub struct Sha224(sha2::Sha224);
@@ -353,7 +354,7 @@ impl Digest for Md5 {
         Self: Sized,
     {
         Self {
-            hash: Box::new(md5::new()),
+            hash: md5::Digest::new(),
         }
     }
 

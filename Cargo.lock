@@ -1008,8 +1008,7 @@ dependencies = [
 [[package]]
 name = "ggstd"
 version = "0.0.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "179b508b1d648ed79074ef0126373c958925320efce487a0ad4a14cbf2fe89f9"
+source = "git+https://github.com/gtrafimenkov/rust-ggstd.git#91478812c127b6b397dfee6e79ce74f0de576202"
 dependencies = [
  "libc",
  "winapi",
