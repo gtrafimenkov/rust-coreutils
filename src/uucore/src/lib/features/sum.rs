@@ -13,6 +13,7 @@
 //! implements the [`Write`] trait, for use in situations where calling
 //! [`write`] would be useful.
 
+use ggstd::crypto::md5;
 use ggstd::encoding::hex;
 #[cfg(windows)]
 use memchr::memmem;
@@ -337,13 +338,43 @@ macro_rules! impl_digest_shake {
     };
 }
 
-pub struct Md5(md5::Md5);
+pub struct Md5 {
+    hash: Box<dyn ggstd::hash::Hash>,
+}
 pub struct Sha1(sha1::Sha1);
 pub struct Sha224(sha2::Sha224);
 pub struct Sha256(sha2::Sha256);
 pub struct Sha384(sha2::Sha384);
 pub struct Sha512(sha2::Sha512);
-impl_digest_common!(Md5, 128);
+
+impl Digest for Md5 {
+    fn new() -> Self
+    where
+        Self: Sized,
+    {
+        Self {
+            hash: Box::new(md5::new()),
+        }
+    }
+
+    fn hash_update(&mut self, input: &[u8]) {
+        _ = self.hash.write_all(input)
+    }
+
+    fn hash_finalize(&mut self, out: &mut [u8]) {
+        let sum = self.hash.sum(&[]);
+        out.copy_from_slice(&sum);
+    }
+
+    fn reset(&mut self) {
+        self.hash.reset();
+    }
+
+    fn output_bits(&self) -> usize {
+        128
+    }
+}
+
 impl_digest_common!(Sha1, 160);
 impl_digest_common!(Sha224, 224);
 impl_digest_common!(Sha256, 256);
