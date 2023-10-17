@@ -9,7 +9,7 @@ use clap::builder::ValueParser;
 use clap::crate_version;
 use clap::ArgAction;
 use clap::{Arg, ArgMatches, Command};
-use hex::encode;
+use ggstd::encoding::hex;
 use regex::Captures;
 use regex::Regex;
 use std::cmp::Ordering;
@@ -805,6 +805,6 @@ fn digest_reader<T: Read>(
         // Assume it's SHAKE.  result_str() doesn't work with shake (as of 8/30/2016)
         let mut bytes = vec![0; (output_bits + 7) / 8];
         digest.hash_finalize(&mut bytes);
-        Ok(encode(bytes))
+        Ok(hex::encode_to_string(&bytes))
     }
 }

@@ -19,7 +19,7 @@ clap = { workspace = true }
 uucore = { workspace = true, features = ["sum"] }
 memchr = { workspace = true }
 regex = { workspace = true }
-hex = { workspace = true }
+ggstd = { workspace = true }
 
 [[bin]]
 name = "hashsum"

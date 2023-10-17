@@ -5,7 +5,7 @@
 
 // spell-checker:ignore (ToDO) fname, algo
 use clap::{crate_version, Arg, ArgAction, Command};
-use hex::encode;
+use ggstd::encoding::hex;
 use std::ffi::OsStr;
 use std::fs::File;
 use std::io::{self, stdin, BufReader, Read};
@@ -209,7 +209,7 @@ fn digest_read<T: Read>(
         // Assume it's SHAKE.  result_str() doesn't work with shake (as of 8/30/2016)
         let mut bytes = vec![0; (output_bits + 7) / 8];
         digest.hash_finalize(&mut bytes);
-        Ok((encode(bytes), output_size))
+        Ok((hex::encode_to_string(&bytes), output_size))
     }
 }
 

@@ -1006,6 +1006,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "ggstd"
+version = "0.0.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "179b508b1d648ed79074ef0126373c958925320efce487a0ad4a14cbf2fe89f9"
+dependencies = [
+ "libc",
+ "winapi",
+]
+
+[[package]]
 name = "glob"
 version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2325,7 +2335,7 @@ name = "uu_cksum"
 version = "0.0.22"
 dependencies = [
  "clap",
- "hex",
+ "ggstd",
  "uucore",
 ]
 
@@ -2532,7 +2542,7 @@ name = "uu_hashsum"
 version = "0.0.22"
 dependencies = [
  "clap",
- "hex",
+ "ggstd",
  "memchr",
  "regex",
  "uucore",
@@ -3224,8 +3234,8 @@ dependencies = [
  "digest",
  "dns-lookup",
  "dunce",
+ "ggstd",
  "glob",
- "hex",
  "itertools",
  "libc",
  "md-5",

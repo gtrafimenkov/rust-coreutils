@@ -12,11 +12,11 @@
 //! [`DigestWriter`] struct provides a wrapper around [`Digest`] that
 //! implements the [`Write`] trait, for use in situations where calling
 //! [`write`] would be useful.
-use std::io::Write;
 
-use hex::encode;
+use ggstd::encoding::hex;
 #[cfg(windows)]
 use memchr::memmem;
+use std::io::Write;
 
 pub trait Digest {
     fn new() -> Self
@@ -32,7 +32,7 @@ pub trait Digest {
     fn result_str(&mut self) -> String {
         let mut buf: Vec<u8> = vec![0; self.output_bytes()];
         self.hash_finalize(&mut buf);
-        encode(buf)
+        hex::encode_to_string(&buf)
     }
 }
 
