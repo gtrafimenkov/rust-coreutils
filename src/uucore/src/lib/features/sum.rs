@@ -13,7 +13,7 @@
 //! implements the [`Write`] trait, for use in situations where calling
 //! [`write`] would be useful.
 
-use ggstd::crypto::md5;
+use ggstd::crypto;
 use ggstd::encoding::hex;
 use ggstd::hash::Hash;
 #[cfg(windows)]
@@ -340,11 +340,13 @@ macro_rules! impl_digest_shake {
 }
 
 pub struct Md5 {
-    hash: md5::Digest,
+    hash: crypto::md5::Digest,
 }
 pub struct Sha1(sha1::Sha1);
 pub struct Sha224(sha2::Sha224);
-pub struct Sha256(sha2::Sha256);
+pub struct Sha256 {
+    hash: crypto::sha256::Digest,
+}
 pub struct Sha384(sha2::Sha384);
 pub struct Sha512(sha2::Sha512);
 
@@ -354,7 +356,7 @@ impl Digest for Md5 {
         Self: Sized,
     {
         Self {
-            hash: md5::Digest::new(),
+            hash: crypto::md5::Digest::new(),
         }
     }
 
@@ -378,7 +380,34 @@ impl Digest for Md5 {
 
 impl_digest_common!(Sha1, 160);
 impl_digest_common!(Sha224, 224);
-impl_digest_common!(Sha256, 256);
+
+impl Digest for Sha256 {
+    fn new() -> Self
+    where
+        Self: Sized,
+    {
+        Self {
+            hash: crypto::sha256::Digest::new(),
+        }
+    }
+
+    fn hash_update(&mut self, input: &[u8]) {
+        _ = self.hash.write_all(input)
+    }
+
+    fn hash_finalize(&mut self, out: &mut [u8]) {
+        let sum = self.hash.sum(&[]);
+        out.copy_from_slice(&sum);
+    }
+
+    fn reset(&mut self) {
+        self.hash.reset();
+    }
+
+    fn output_bits(&self) -> usize {
+        256
+    }
+}
 impl_digest_common!(Sha384, 384);
 impl_digest_common!(Sha512, 512);
 

@@ -1008,7 +1008,7 @@ dependencies = [
 [[package]]
 name = "ggstd"
 version = "0.0.5"
-source = "git+https://github.com/gtrafimenkov/rust-ggstd.git#91478812c127b6b397dfee6e79ce74f0de576202"
+source = "git+https://github.com/gtrafimenkov/rust-ggstd.git#994ba97d45518d2ce5ab759e8482953df2cac5d0"
 dependencies = [
  "libc",
  "winapi",
