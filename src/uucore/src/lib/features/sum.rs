@@ -13,17 +13,17 @@
 //! implements the [`Write`] trait, for use in situations where calling
 //! [`write`] would be useful.
 
-use ggstd::crypto;
 use ggstd::encoding::hex;
-use ggstd::hash::Hash;
 #[cfg(windows)]
 use memchr::memmem;
 use std::io::Write;
 
-pub trait Digest {
+pub trait DigestCreate {
     fn new() -> Self
     where
         Self: Sized;
+}
+pub trait Digest {
     fn hash_update(&mut self, input: &[u8]);
     fn hash_finalize(&mut self, out: &mut [u8]);
     fn reset(&mut self);
@@ -53,12 +53,13 @@ impl Blake2b {
     }
 }
 
-impl Digest for Blake2b {
+impl DigestCreate for Blake2b {
     fn new() -> Self {
         // by default, Blake2b output is 512 bits long (= 64B)
         Self::with_output_bytes(64)
     }
-
+}
+impl Digest for Blake2b {
     fn hash_update(&mut self, input: &[u8]) {
         self.0.update(input);
     }
@@ -78,11 +79,12 @@ impl Digest for Blake2b {
 }
 
 pub struct Blake3(blake3::Hasher);
-impl Digest for Blake3 {
+impl DigestCreate for Blake3 {
     fn new() -> Self {
         Self(blake3::Hasher::new())
     }
-
+}
+impl Digest for Blake3 {
     fn hash_update(&mut self, input: &[u8]) {
         self.0.update(input);
     }
@@ -102,11 +104,12 @@ impl Digest for Blake3 {
 }
 
 pub struct Sm3(sm3::Sm3);
-impl Digest for Sm3 {
+impl DigestCreate for Sm3 {
     fn new() -> Self {
         Self(<sm3::Sm3 as sm3::Digest>::new())
     }
-
+}
+impl Digest for Sm3 {
     fn hash_update(&mut self, input: &[u8]) {
         <sm3::Sm3 as sm3::Digest>::update(&mut self.0, input);
     }
@@ -168,7 +171,7 @@ impl CRC {
     }
 }
 
-impl Digest for CRC {
+impl DigestCreate for CRC {
     fn new() -> Self {
         Self {
             state: 0,
@@ -176,7 +179,8 @@ impl Digest for CRC {
             crc_table: Self::generate_crc_table(),
         }
     }
-
+}
+impl Digest for CRC {
     fn hash_update(&mut self, input: &[u8]) {
         for &elt in input {
             self.update(elt);
@@ -219,11 +223,12 @@ pub fn div_ceil(a: usize, b: usize) -> usize {
 pub struct BSD {
     state: u16,
 }
-impl Digest for BSD {
+impl DigestCreate for BSD {
     fn new() -> Self {
         Self { state: 0 }
     }
-
+}
+impl Digest for BSD {
     fn hash_update(&mut self, input: &[u8]) {
         for &byte in input {
             self.state = (self.state >> 1) + ((self.state & 1) << 15);
@@ -253,11 +258,12 @@ impl Digest for BSD {
 pub struct SYSV {
     state: u32,
 }
-impl Digest for SYSV {
+impl DigestCreate for SYSV {
     fn new() -> Self {
         Self { state: 0 }
     }
-
+}
+impl Digest for SYSV {
     fn hash_update(&mut self, input: &[u8]) {
         for &byte in input {
             self.state = self.state.wrapping_add(u32::from(byte));
@@ -288,11 +294,12 @@ impl Digest for SYSV {
 // Implements the Digest trait for sha2 / sha3 algorithms with fixed output
 macro_rules! impl_digest_common {
     ($algo_type: ty, $size: expr) => {
-        impl Digest for $algo_type {
+        impl DigestCreate for $algo_type {
             fn new() -> Self {
                 Self(Default::default())
             }
-
+        }
+        impl Digest for $algo_type {
             fn hash_update(&mut self, input: &[u8]) {
                 digest::Digest::update(&mut self.0, input);
             }
@@ -315,11 +322,12 @@ macro_rules! impl_digest_common {
 // Implements the Digest trait for sha2 / sha3 algorithms with variable output
 macro_rules! impl_digest_shake {
     ($algo_type: ty) => {
-        impl Digest for $algo_type {
+        impl DigestCreate for $algo_type {
             fn new() -> Self {
                 Self(Default::default())
             }
-
+        }
+        impl Digest for $algo_type {
             fn hash_update(&mut self, input: &[u8]) {
                 digest::Update::update(&mut self.0, input);
             }
@@ -339,27 +347,22 @@ macro_rules! impl_digest_shake {
     };
 }
 
-pub struct Md5 {
-    hash: crypto::md5::Digest,
-}
 pub struct Sha1(sha1::Sha1);
 pub struct Sha224(sha2::Sha224);
-pub struct Sha256 {
-    hash: crypto::sha256::Digest,
-}
 pub struct Sha384(sha2::Sha384);
 pub struct Sha512(sha2::Sha512);
 
-impl Digest for Md5 {
-    fn new() -> Self
-    where
-        Self: Sized,
-    {
-        Self {
-            hash: crypto::md5::Digest::new(),
-        }
-    }
+pub struct HashAdapter<GGHash: ggstd::hash::Hash> {
+    hash: GGHash,
+}
 
+impl<Hash: ggstd::hash::Hash> HashAdapter<Hash> {
+    pub fn new(hash: Hash) -> Self {
+        Self { hash }
+    }
+}
+
+impl<Hash: ggstd::hash::Hash> Digest for HashAdapter<Hash> {
     fn hash_update(&mut self, input: &[u8]) {
         _ = self.hash.write_all(input)
     }
@@ -374,40 +377,12 @@ impl Digest for Md5 {
     }
 
     fn output_bits(&self) -> usize {
-        128
+        self.hash.size() * 8
     }
 }
 
 impl_digest_common!(Sha1, 160);
 impl_digest_common!(Sha224, 224);
-
-impl Digest for Sha256 {
-    fn new() -> Self
-    where
-        Self: Sized,
-    {
-        Self {
-            hash: crypto::sha256::Digest::new(),
-        }
-    }
-
-    fn hash_update(&mut self, input: &[u8]) {
-        _ = self.hash.write_all(input)
-    }
-
-    fn hash_finalize(&mut self, out: &mut [u8]) {
-        let sum = self.hash.sum(&[]);
-        out.copy_from_slice(&sum);
-    }
-
-    fn reset(&mut self) {
-        self.hash.reset();
-    }
-
-    fn output_bits(&self) -> usize {
-        256
-    }
-}
 impl_digest_common!(Sha384, 384);
 impl_digest_common!(Sha512, 512);
 

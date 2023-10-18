@@ -22,12 +22,11 @@ use std::num::ParseIntError;
 use std::path::Path;
 use uucore::error::{FromIo, UError, UResult};
 use uucore::sum::{
-    Blake2b, Blake3, Digest, DigestWriter, Md5, Sha1, Sha224, Sha256, Sha384, Sha3_224, Sha3_256,
-    Sha3_384, Sha3_512, Sha512, Shake128, Shake256,
+    Blake2b, Blake3, Digest, DigestCreate, DigestWriter, HashAdapter, Sha1, Sha224, Sha384,
+    Sha3_224, Sha3_256, Sha3_384, Sha3_512, Sha512, Shake128, Shake256,
 };
 use uucore::{crash, display::Quotable, show_warning};
 use uucore::{format_usage, help_about, help_usage};
-
 const NAME: &str = "hashsum";
 const ABOUT: &str = help_about!("hashsum.md");
 const USAGE: &str = help_usage!("hashsum.md");
@@ -172,10 +171,18 @@ fn detect_algo(
     matches: &ArgMatches,
 ) -> (&'static str, Box<dyn Digest + 'static>, usize) {
     let (name, alg, output_bits) = match program {
-        "md5sum" => ("MD5", Box::new(Md5::new()) as Box<dyn Digest>, 128),
+        "md5sum" => (
+            "MD5",
+            Box::new(HashAdapter::new(ggstd::crypto::md5::Digest::new())) as Box<dyn Digest>,
+            128,
+        ),
         "sha1sum" => ("SHA1", Box::new(Sha1::new()) as Box<dyn Digest>, 160),
         "sha224sum" => ("SHA224", Box::new(Sha224::new()) as Box<dyn Digest>, 224),
-        "sha256sum" => ("SHA256", Box::new(Sha256::new()) as Box<dyn Digest>, 256),
+        "sha256sum" => (
+            "SHA256",
+            Box::new(HashAdapter::new(ggstd::crypto::sha256::Digest::new())) as Box<dyn Digest>,
+            256,
+        ),
         "sha384sum" => ("SHA384", Box::new(Sha384::new()) as Box<dyn Digest>, 384),
         "sha512sum" => ("SHA512", Box::new(Sha512::new()) as Box<dyn Digest>, 512),
         "b2sum" => create_blake2b(matches),
@@ -236,7 +243,11 @@ fn create_algorithm_from_flags(matches: &ArgMatches) -> (&'static str, Box<dyn D
     };
 
     if matches.get_flag("md5") {
-        set_or_crash("MD5", Box::new(Md5::new()), 128);
+        set_or_crash(
+            "MD5",
+            Box::new(HashAdapter::new(ggstd::crypto::md5::Digest::new())),
+            128,
+        );
     }
     if matches.get_flag("sha1") {
         set_or_crash("SHA1", Box::new(Sha1::new()), 160);
@@ -245,7 +256,11 @@ fn create_algorithm_from_flags(matches: &ArgMatches) -> (&'static str, Box<dyn D
         set_or_crash("SHA224", Box::new(Sha224::new()), 224);
     }
     if matches.get_flag("sha256") {
-        set_or_crash("SHA256", Box::new(Sha256::new()), 256);
+        set_or_crash(
+            "SHA256",
+            Box::new(HashAdapter::new(ggstd::crypto::sha256::Digest::new())),
+            256,
+        );
     }
     if matches.get_flag("sha384") {
         set_or_crash("SHA384", Box::new(Sha384::new()), 384);

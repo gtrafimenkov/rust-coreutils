@@ -15,8 +15,8 @@ use uucore::{
     error::{FromIo, UResult},
     format_usage, help_about, help_section, help_usage,
     sum::{
-        div_ceil, Blake2b, Digest, DigestWriter, Md5, Sha1, Sha224, Sha256, Sha384, Sha512, Sm3,
-        BSD, CRC, SYSV,
+        div_ceil, Blake2b, Digest, DigestCreate, DigestWriter, HashAdapter, Sha1, Sha224, Sha384,
+        Sha512, Sm3, BSD, CRC, SYSV,
     },
 };
 
@@ -55,7 +55,7 @@ fn detect_algo(program: &str) -> (&'static str, Box<dyn Digest + 'static>, usize
         ),
         ALGORITHM_OPTIONS_MD5 => (
             ALGORITHM_OPTIONS_MD5,
-            Box::new(Md5::new()) as Box<dyn Digest>,
+            Box::new(HashAdapter::new(ggstd::crypto::md5::Digest::new())) as Box<dyn Digest>,
             128,
         ),
         ALGORITHM_OPTIONS_SHA1 => (
@@ -70,7 +70,7 @@ fn detect_algo(program: &str) -> (&'static str, Box<dyn Digest + 'static>, usize
         ),
         ALGORITHM_OPTIONS_SHA256 => (
             ALGORITHM_OPTIONS_SHA256,
-            Box::new(Sha256::new()) as Box<dyn Digest>,
+            Box::new(HashAdapter::new(ggstd::crypto::sha256::Digest::new())) as Box<dyn Digest>,
             256,
         ),
         ALGORITHM_OPTIONS_SHA384 => (
