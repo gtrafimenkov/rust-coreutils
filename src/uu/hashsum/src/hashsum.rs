@@ -22,7 +22,7 @@ use std::num::ParseIntError;
 use std::path::Path;
 use uucore::error::{FromIo, UError, UResult};
 use uucore::sum::{
-    Blake2b, Blake3, Digest, DigestCreate, DigestWriter, HashAdapter, Sha224, Sha384,
+    Blake2b, Blake3, Digest, DigestCreate, DigestWriter, HashAdapter, Sha384,
     Sha3_224, Sha3_256, Sha3_384, Sha3_512, Sha512, Shake128, Shake256,
 };
 use uucore::{crash, display::Quotable, show_warning};
@@ -177,7 +177,7 @@ fn detect_algo(
             128,
         ),
         "sha1sum" => ("SHA1", Box::new(HashAdapter::new(ggstd::crypto::sha1::Digest::new())) as Box<dyn Digest>, 160),
-        "sha224sum" => ("SHA224", Box::new(Sha224::new()) as Box<dyn Digest>, 224),
+        "sha224sum" => ("SHA224", Box::new(HashAdapter::new(ggstd::crypto::sha256::Digest::new224())) as Box<dyn Digest>, 224),
         "sha256sum" => (
             "SHA256",
             Box::new(HashAdapter::new(ggstd::crypto::sha256::Digest::new())) as Box<dyn Digest>,
@@ -253,7 +253,7 @@ fn create_algorithm_from_flags(matches: &ArgMatches) -> (&'static str, Box<dyn D
         set_or_crash("SHA1", Box::new(HashAdapter::new(ggstd::crypto::sha1::Digest::new())), 160);
     }
     if matches.get_flag("sha224") {
-        set_or_crash("SHA224", Box::new(Sha224::new()), 224);
+        set_or_crash("SHA224", Box::new(HashAdapter::new(ggstd::crypto::sha256::Digest::new224())), 224);
     }
     if matches.get_flag("sha256") {
         set_or_crash(
