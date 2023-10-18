@@ -384,6 +384,7 @@ dependencies = [
  "clap_mangen",
  "conv",
  "filetime",
+ "ggstd",
  "glob",
  "hex-literal",
  "libc",
@@ -399,7 +400,6 @@ dependencies = [
  "rlimit",
  "rstest",
  "selinux",
- "sha1",
  "tempfile",
  "textwrap",
  "time",
@@ -1008,7 +1008,7 @@ dependencies = [
 [[package]]
 name = "ggstd"
 version = "0.0.5"
-source = "git+https://github.com/gtrafimenkov/rust-ggstd.git#994ba97d45518d2ce5ab759e8482953df2cac5d0"
+source = "git+https://github.com/gtrafimenkov/rust-ggstd.git#bd93f503b031d19579bf9debe957b5a80df3f65e"
 dependencies = [
  "libc",
  "winapi",
@@ -1928,17 +1928,6 @@ name = "serde"
 version = "1.0.147"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d193d69bae983fc11a79df82342761dfbf28a99fc8d203dca4c3c1b590948965"
-
-[[package]]
-name = "sha1"
-version = "0.10.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e3bf829a2d51ab4a5ddf1352d8470c140cadc8301b2ae1789db023f01cedd6ba"
-dependencies = [
- "cfg-if",
- "cpufeatures",
- "digest",
-]
 
 [[package]]
 name = "sha2"
@@ -3231,7 +3220,6 @@ dependencies = [
  "nix",
  "once_cell",
  "os_display",
- "sha1",
  "sha2",
  "sha3",
  "sm3",

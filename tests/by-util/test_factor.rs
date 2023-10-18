@@ -37,7 +37,6 @@ fn test_valid_arg_exponents() {
 fn test_parallel() {
     use crate::common::util::AtPath;
     use hex_literal::hex;
-    use sha1::{Digest, Sha1};
     use std::{fs::OpenOptions, time::Duration};
     use tempfile::TempDir;
     // factor should only flush the buffer at line breaks
@@ -72,9 +71,7 @@ fn test_parallel() {
         .ccmd("sort")
         .arg(tmp_dir.plus("output"))
         .succeeds();
-    let mut hasher = Sha1::new();
-    hasher.update(result.stdout());
-    let hash_check = hasher.finalize();
+    let hash_check = ggstd::crypto::sha1::sum(result.stdout());
     assert_eq!(
         hash_check[..],
         hex!("cc743607c0ff300ff575d92f4ff0c87d5660c393")
@@ -84,7 +81,6 @@ fn test_parallel() {
 #[test]
 fn test_first_1000_integers() {
     use hex_literal::hex;
-    use sha1::{Digest, Sha1};
 
     let n_integers = 1000;
     let mut input_string = String::new();
@@ -96,9 +92,7 @@ fn test_first_1000_integers() {
     let result = new_ucmd!().pipe_in(input_string.as_bytes()).succeeds();
 
     // `seq 0 1000 | factor | sha1sum` => "c734327bd18b90fca5762f671672b5eda19f7dca"
-    let mut hasher = Sha1::new();
-    hasher.update(result.stdout());
-    let hash_check = hasher.finalize();
+    let hash_check = ggstd::crypto::sha1::sum(result.stdout());
     assert_eq!(
         hash_check[..],
         hex!("c734327bd18b90fca5762f671672b5eda19f7dca")
@@ -108,7 +102,6 @@ fn test_first_1000_integers() {
 #[test]
 fn test_first_1000_integers_with_exponents() {
     use hex_literal::hex;
-    use sha1::{Digest, Sha1};
 
     let n_integers = 1000;
     let mut input_string = String::new();
@@ -124,9 +117,7 @@ fn test_first_1000_integers_with_exponents() {
 
     // Using factor from GNU Coreutils 9.2
     // `seq 0 1000 | factor -h | sha1sum` => "45f5f758a9319870770bd1fec2de23d54331944d"
-    let mut hasher = Sha1::new();
-    hasher.update(result.stdout());
-    let hash_check = hasher.finalize();
+    let hash_check = ggstd::crypto::sha1::sum(result.stdout());
     assert_eq!(
         hash_check[..],
         hex!("45f5f758a9319870770bd1fec2de23d54331944d")

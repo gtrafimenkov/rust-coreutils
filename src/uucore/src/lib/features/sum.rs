@@ -347,7 +347,6 @@ macro_rules! impl_digest_shake {
     };
 }
 
-pub struct Sha1(sha1::Sha1);
 pub struct Sha224(sha2::Sha224);
 pub struct Sha384(sha2::Sha384);
 pub struct Sha512(sha2::Sha512);
@@ -381,7 +380,6 @@ impl<Hash: ggstd::hash::Hash> Digest for HashAdapter<Hash> {
     }
 }
 
-impl_digest_common!(Sha1, 160);
 impl_digest_common!(Sha224, 224);
 impl_digest_common!(Sha384, 384);
 impl_digest_common!(Sha512, 512);
