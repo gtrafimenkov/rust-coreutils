@@ -5,7 +5,7 @@
 
 // spell-checker:ignore (ToDO) fname, algo
 use clap::{crate_version, Arg, ArgAction, Command};
-use hex::encode;
+use ggstd::encoding::hex;
 use std::ffi::OsStr;
 use std::fs::File;
 use std::io::{self, stdin, BufReader, Read};
@@ -15,8 +15,8 @@ use uucore::{
     error::{FromIo, UResult},
     format_usage, help_about, help_section, help_usage,
     sum::{
-        div_ceil, Blake2b, Digest, DigestWriter, Md5, Sha1, Sha224, Sha256, Sha384, Sha512, Sm3,
-        BSD, CRC, SYSV,
+        div_ceil, Blake2b, Digest, DigestCreate, DigestWriter, HashAdapter, Sha384,
+        Sha512, Sm3, BSD, CRC, SYSV,
     },
 };
 
@@ -55,22 +55,22 @@ fn detect_algo(program: &str) -> (&'static str, Box<dyn Digest + 'static>, usize
         ),
         ALGORITHM_OPTIONS_MD5 => (
             ALGORITHM_OPTIONS_MD5,
-            Box::new(Md5::new()) as Box<dyn Digest>,
+            Box::new(HashAdapter::new(ggstd::crypto::md5::Digest::new())) as Box<dyn Digest>,
             128,
         ),
         ALGORITHM_OPTIONS_SHA1 => (
             ALGORITHM_OPTIONS_SHA1,
-            Box::new(Sha1::new()) as Box<dyn Digest>,
+            Box::new(HashAdapter::new(ggstd::crypto::sha1::Digest::new())) as Box<dyn Digest>,
             160,
         ),
         ALGORITHM_OPTIONS_SHA224 => (
             ALGORITHM_OPTIONS_SHA224,
-            Box::new(Sha224::new()) as Box<dyn Digest>,
+            Box::new(HashAdapter::new(ggstd::crypto::sha256::Digest::new224())) as Box<dyn Digest>,
             224,
         ),
         ALGORITHM_OPTIONS_SHA256 => (
             ALGORITHM_OPTIONS_SHA256,
-            Box::new(Sha256::new()) as Box<dyn Digest>,
+            Box::new(HashAdapter::new(ggstd::crypto::sha256::Digest::new())) as Box<dyn Digest>,
             256,
         ),
         ALGORITHM_OPTIONS_SHA384 => (
@@ -209,7 +209,7 @@ fn digest_read<T: Read>(
         // Assume it's SHAKE.  result_str() doesn't work with shake (as of 8/30/2016)
         let mut bytes = vec![0; (output_bits + 7) / 8];
         digest.hash_finalize(&mut bytes);
-        Ok((encode(bytes), output_size))
+        Ok((hex::encode_to_string(&bytes), output_size))
     }
 }
 
